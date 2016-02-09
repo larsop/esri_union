@@ -35,11 +35,11 @@ cat ../esri_union/src/main/sql/function_0*.sql | psql
 </pre></code>
 
 # Some limitations/features :
-## Tested with Postgres 9.3 and above. (We use some JSON feature)
-## Both layers must has the same projection. (To avoid to take a copy of the tables)
-## Both layers must contain rows
-## Return a temp table or a unlogged table. (To avoid to create tons of wall files. If the result is suppose be kept for later do “create table as” for temp tables or in Postgres 9.5 do alter table if unlogged.)
-## Runs default in one single thread (Almost the same code also works with multiple threads and you can the run many times a fast. How to do work in parallel will be added to the repo later. In parallel mode we can handle thousands of surfaces pr. second )
+* Tested with Postgres 9.3 and above. (We use some JSON feature)
+* Both layers must has the same projection. (To avoid to take a copy of the tables)
+* Both layers must contain rows
+* Return a temp table or a unlogged table. (To avoid to create tons of wall files. If the result is suppose be kept for later do “create table as” for temp tables or in Postgres 9.5 do alter table if unlogged.)
+* Runs default in one single thread (Almost the same code also works with multiple threads and you can the run many times a fast. How to do work in parallel will be added to the repo later. In parallel mode we can handle thousands of surfaces pr. second )
 
 
 # How it works in more details :
