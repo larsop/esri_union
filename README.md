@@ -1,27 +1,27 @@
 # What is this (Code will be added soon)
 
-This is a generic Postgres function that is does a “Esri union” between two polygon layers in a postgis database. More info about Esri union can be found at http://resources.esri.com/help/9.3/arcgisengine/java/gp_toolref/analysis_tools/union_analysis_.htm.
+This is a generic Postgres function that is does a “Esri union” between two polygonlayers in a postgis database. More info about Esri union can be found at http://resources.esri.com/help/9.3/arcgisengine/java/gp_toolref/analysis_tools/union_analysis_.htm.
 
-The basic idea is that you call this function and with 2 tables as input. Build a grid to split up the data, compute the result and return a table name with a union of this two tables. For areas that intersect you get attributes from both tables and for areas that only exits in one of the tables you only get attributes from one table.
+The basic idea is that you call this function and with 2 tables as input. The code builds a grid to splits up the data, compute the result and return a table name with a union of this two tables. For areas that intersect you get attributes from both tables and for areas that only exits in one of the tables you only get attributes from one table.
 
 # How to use :
 For each table we need the following information as input 
 * table name
 * primary key column name (supports only a single column, could have been been computed in the code. The primary key is used to remove grid lines after the result is done.)
-* geometry column name (can be computed in the code)
+* geometry column name (could have be computed in the code)
 
-## Example 1 : Returns a tmp table
+## Example 1 : Union beetween table_1 and table_2 and return a tmp table
 run the function  get_esri_union with 2 parameters
 <pre><code> select get_esri_union('table_1 id geo', 'table_2 objectid geo')"; </pre></code>
 The result is stored in temp table esri_union_result. To keep the result when you get back to sql
 <pre><code> CREATE TABLE sl_lop.result1 AS SELECT * FROM  esri_union_result; </pre></code>
 
-## Example 2 : Return a unlogged table with given name
+## Example 2 : Union beetween table_1 and table_2 and return a unlogged table with name sl_lop.result
 run the function  get_esri_union with 3 parameters
 <pre><code> select get_esri_union('table_1 id geo', 'table_2 objectid geo','sl_lop.result')"; </pre></code>
 The result is stored in a unlogged table sl_lop.result . If the the db server crashes or is be restored the  sl_lop.result will gone, so remember to change table to logged (9.5 only) or copy the result to another table.
 
-## Example 3 : Return a unlogged table, but use bigger cells
+## Example 3 : Union beetween table_1 and table_2 and return a unlogged table with name sl_lop.result, but use bigger cells
 run the function  get_esri_union with 4 parameters
 <pre><code> select get_esri_union('table_1 id geo', 'table_2 objectid geo','sl_lop.result',5000)"; </pre></code>
 The result is stored in a unlogged table sl_lop.result . If the the db server crashes or is be restored the  sl_lop.result will gone, so remember to change table to logged (9.5 only) or copy the result to another table.
@@ -44,8 +44,9 @@ cat ../esri_union/src/main/sql/function_0*.sql | psql
 
 # How it works in more details :
 
-* Fist we have to create grid that has cells that varies with the map density. If there are many polygons in one area, this area will get small cells in in areas with no polygons the will verry big cell. This is done by using the using the code from https://github.com/larsop/content_balanced_grid . The default number off rows pr cell is 3000. 
-We can now divide an conquer and work us through cell by cell. (We can also work on each cell i parallel if needed)
+* Fist we have to create grid that has cells that varies with the map density. If there are many polygons in one area, this area will get small cells in in areas with no polygons the will verry big cell. This is done by using the using the code from https://github.com/larsop/content_balanced_grid. 
+* The default number off rows pr cell is 3000. The number of polygons pr. cell depends on much memory you have and the density of points.
+* We can now divide an conquer and work us through cell by cell. (We can also work on each cell i parallel if needed)
 * In each cell the followings happens
     * Get the content from both layers for the current cell
     * Find all intersection between selected rows from table one and two
