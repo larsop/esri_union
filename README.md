@@ -26,6 +26,44 @@ run the function  get_esri_union with 4 parameters
 <pre><code> select get_esri_union('table_1 id geo', 'table_2 objectid geo','sl_lop.result',5000)"; </pre></code>
 The result is stored in a unlogged table sl_lop.result . If the the db server crashes or is be restored the  sl_lop.result will gone, so remember to change table to logged (9.5 only) or copy the result to another table.
 
+## Example 4 :Do a analyze of the two tables schema1.municipality and schema3.municipality_data1, where the schema1.municipality is suppose to cover all of areas of schema1.data1.
+
+Run the function to get the result, but you change the default number of rows pr cell to 100. Since this layer has a low density we only want 100 rows pr cell. In some cases we see that reducing the cell size do reduce that chance of topology exceptions.
+
+<pre><code>select get_esri_union('schema1.data1 sl_sdeid geo', 'schema1.municipality sl_sdeid geo','schema3.municipality_data1',100);</pre></code>
+ 
+(You need write access to schema3.municipality_data1 and it can not exist from before. If you don't have write set the name to null like this and you get a temp table back, but that table will be gone when you leave your psql session.
+
+<pre><code>select get_esri_union('schema1.data1 sl_sdeid geo', 'schema1.municipality sl_sdeid geo',null,100);</pre></code>
+
+Get area grouped by column komid from schema1.municipality for all the rows in schema1.data1
+
+<pre><code>select * from (
+select t2_komid, Sum(ST_Area(ST_transform(geom,3035))) as m2 from schema3.municipality_data1 where t1_sl_sdeid is not null group by t2_komid
+) as r order by t2_komid desc;
+</pre></code>
+
+In the result below we see that are rows where t2_komid is null. 
+<pre><code>
+ t2_komid |        m2        
+----------+------------------
+   [NULL] | 154181279.621773
+     2030 | 19332444.5574537
+     2027 | 252377877.535185
+     2025 | 1020569592.49986
+     2024 | 45542291.4551781
+     2020 | 390228154.928155
+     2015 | 26485.4287747904
+     2014 | 43330957.1494888
+     2012 | 817415562.691178
+.
+</pre></code>
+
+Then you can zoom to this rows or download rows to check them out.
+
+<pre><code>pgsql2shp -f data -h  dbserver -u user -P password dbname "select * from schema3.municipality_data1 where t2_komid is null"</pre></code>
+
+
 # How to install :
 <pre><code> 
 git clone https://github.com/larsop/content_balanced_grid
@@ -36,6 +74,7 @@ cat ../esri_union/src/main/sql/function_0*.sql | psql
 
 # Some limitations/features :
 * Tested with Postgres 9.3 and above. (We use some JSON feature)
+* Testet with srid 4258 (degrees) and 25833 (meter)
 * Both layers must has the same projection. (To avoid to take a copy of the tables)
 * Both layers must contain rows
 * Return a temp table or a unlogged table. (To avoid to create tons of wall files. If the result is suppose be kept for later do “create table as” for temp tables or in Postgres 9.5 do alter table if unlogged.)
@@ -45,7 +84,7 @@ cat ../esri_union/src/main/sql/function_0*.sql | psql
 # How it works in more details :
 
 * Fist we have to create grid that has cells that varies with the map density. If there are many polygons in one area, this area will get small cells in in areas with no polygons the will verry big cell. This is done by using the using the code from https://github.com/larsop/content_balanced_grid. 
-* The default number off rows pr cell is 3000. The number of polygons pr. cell depends on much memory you have and the density of points.
+* The default number off rows pr cell is 3000. The number of polygons pr. cell depends on much memory you have and the density of points. In some cases we see that reducing the cell size do reduce that chance of topology exceptions.
 * We can now divide an conquer and work us through cell by cell. (We can also work on each cell i parallel if needed)
 * In each cell the followings happens
     * Get the content from both layers for the current cell
