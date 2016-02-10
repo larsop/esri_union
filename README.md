@@ -1,4 +1,4 @@
-# What is this (Code will be added soon)
+# What is this function doing
 
 This is a generic Postgres function that is does a “Esri union” between two polygonlayers in a postgis database. More info about Esri union can be found at http://resources.esri.com/help/9.3/arcgisengine/java/gp_toolref/analysis_tools/union_analysis_.htm.
 
@@ -13,8 +13,9 @@ For each table we need the following information as input
 ## Example 1 : Union beetween table_1 and table_2 and return a tmp table
 run the function  get_esri_union with 2 parameters
 <pre><code> select get_esri_union('table_1 id geo', 'table_2 objectid geo')"; </pre></code>
-The result is stored in temp table esri_union_result. To keep the result when you get back to sql
-<pre><code> CREATE TABLE sl_lop.result1 AS SELECT * FROM  esri_union_result; </pre></code>
+The result is stored in uniqie temp table with a name like esri_union_result_11876d5db5a9b85570fb4f3813ea31e9. 
+To keep the result when you get back to sql, where the last part of the name is unique mm5 sum
+<pre><code> CREATE TABLE sl_lop.result1 AS SELECT * FROM  esri_union_result_11876d5db5a9b85570fb4f3813ea31e9; </pre></code>
 
 ## Example 2 : Union beetween table_1 and table_2 and return a unlogged table with name sl_lop.result
 run the function  get_esri_union with 3 parameters
@@ -78,6 +79,7 @@ cat ../esri_union/src/main/sql/function_0*.sql | psql
 * Both layers must has the same projection. (To avoid to take a copy of the tables)
 * Both layers must contain rows
 * Return a temp table or a unlogged table. (To avoid to create tons of wall files. If the result is suppose be kept for later do “create table as” for temp tables or in Postgres 9.5 do alter table if unlogged.)
+* If the same logged in user runs this function at the same against the same table we seems to block that resolved after a while.
 * Runs default in one single thread (Almost the same code also works with multiple threads and you can the run many times a fast. How to do work in parallel will be added to the repo later. In parallel mode we can handle thousands of surfaces pr. second )
 
 
