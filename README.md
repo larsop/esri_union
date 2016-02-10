@@ -27,7 +27,7 @@ run the function  get_esri_union with 4 parameters
 <pre><code> select get_esri_union('table_1 id geo', 'table_2 objectid geo','sl_lop.result',5000)"; </pre></code>
 The result is stored in a unlogged table sl_lop.result . If the the db server crashes or is be restored the  sl_lop.result will gone, so remember to change table to logged (9.5 only) or copy the result to another table.
 
-## Example 4 :Do a analyze of the two tables schema1.municipality and schema3.municipality_data1, where the schema1.municipality is suppose to cover all of areas of schema1.data1.
+## Example 4 :Do a analyze of the two tables schema1.municipality and schema3.data1, where the schema1.municipality is suppose to cover all of areas of schema1.data1.
 
 Run the function to get the result, but you change the default number of rows pr cell to 100. Since this layer has a low density we only want 100 rows pr cell. In some cases we see that reducing the cell size do reduce that chance of topology exceptions.
 
