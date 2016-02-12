@@ -1,0 +1,13 @@
+sudo: false
+
+language: sql
+
+addons:
+  postgresql: "9.3"
+  apt:
+    packages:
+    - postgis
+
+script:
+  - echo "select version()" | psql template1
+  - make check RUNTESTFLAGS=-v
