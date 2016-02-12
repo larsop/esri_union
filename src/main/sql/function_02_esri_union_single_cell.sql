@@ -111,7 +111,13 @@ BEGIN
 
 
 	 	-- find all intersection between selected rows from table one and two
-        sql_to_run := 'SELECT * FROM (SELECT esri_union_intersection(' || geo_column_names_as || ') AS geom,'  || column_names_as  
+        sql_to_run := 'SELECT * FROM ( SELECT '
+        || ' CASE ' 
+        || ' WHEN ST_Within(' ||  geo_colums_as_array[1]  || ',' ||  geo_colums_as_array[2] || ') THEN ST_Multi(' || geo_colums_as_array[1] || ') '
+        || ' WHEN ST_Within(' ||  geo_colums_as_array[2]  || ',' ||  geo_colums_as_array[1] || ') THEN ST_Multi(' || geo_colums_as_array[2] || ') '
+		|| ' ELSE ' || ' esri_union_intersection(' || geo_column_names_as || ')' 
+		|| ' END AS geom,'
+        || column_names_as  
         || ' FROM ' ||  tmp_table_names_as ||' WHERE ST_Intersects(' || geo_column_names_as || ')'  || ' ) AS foo_t ';
         command_string := format('INSERT INTO %s(%s) %s',result_table_name_tmp,' geom, ' ||  column_names,sql_to_run);
         RAISE NOTICE 'command_string 1 : % ',command_string;
