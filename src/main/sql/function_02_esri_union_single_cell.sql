@@ -74,9 +74,17 @@ BEGIN
 
     		      
         -- find all intersection between table one and current grid
-        sql_to_run := 'SELECT esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom) AS ' || geo_colums_array[1] || ',' || columns_as_array[1]  
+        sql_to_run := 
+        'SELECT ' || geo_colums_as_array[1] || ' AS ' || geo_colums_array[1] || ',' || columns_as_array[1]  
         || ' FROM ' ||  tables_as_array[1] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
-        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[1] || ')';
+        || ' WHERE gc.id = ' || cell_id || ' AND ST_Within(' ||  geo_colums_as_array[1] || ',gc.geom)'
+        || ' UNION '
+        || ' SELECT esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom) AS ' || geo_colums_array[1] || ',' || columns_as_array[1]  
+        || ' FROM ' ||  tables_as_array[1] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
+        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(ST_ExteriorRing(gc.geom),' ||  geo_colums_as_array[1] || ')';
+
+        -- Is it possible to get duplicates here I asume that a polygon can not both intersersect and be Within at the same time ????
+        
         command_string := format('INSERT INTO %s(%s) %s',table_name_tmp_t1,geo_colums_array[1] || ',' || org_columns_names_array[1],sql_to_run);
         RAISE NOTICE 'command_string P1 : % ',command_string;
         EXECUTE command_string;
@@ -84,9 +92,17 @@ BEGIN
         EXECUTE command_string;
                 
         -- find all intersection between table two and current grid
-        sql_to_run := 'SELECT esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom) AS ' || geo_colums_array[2] || ',' || columns_as_array[2]  
+        sql_to_run := 
+        'SELECT ' || geo_colums_as_array[2] || ' AS ' || geo_colums_array[2] || ',' || columns_as_array[2]  
         || ' FROM ' ||  tables_as_array[2] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
-        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[2] || ')';
+        || ' WHERE gc.id = ' || cell_id || ' AND ST_Within(' ||  geo_colums_as_array[2] || ',gc.geom)'
+        || ' UNION '
+        || ' SELECT esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom) AS ' || geo_colums_array[2] || ',' || columns_as_array[2]  
+        || ' FROM ' ||  tables_as_array[2] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
+        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(ST_ExteriorRing(gc.geom),' ||  geo_colums_as_array[2] || ')';
+        
+        -- Is it possible to get duplicates here I asume that a polygon can not both intersersect and be Within at the same time ????
+        
         command_string := format('INSERT INTO %s(%s) %s',table_name_tmp_t2,geo_colums_array[2] || ',' || org_columns_names_array[2],sql_to_run);
         RAISE NOTICE 'command_string P2 : % ',command_string;
         EXECUTE command_string;
