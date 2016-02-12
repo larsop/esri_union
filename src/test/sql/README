@@ -1,0 +1,22 @@
+Here is a list symlinks we need to add to run the test
+
+Run from src/test/sql directory
+
+mkdir loader
+ln -s /usr/local/bin/shp2pgsql loader
+ln -s /usr/local/bin/pgsql2shp loader
+mkdir -p regress/00-regress-install/share/contrib
+ln -s /usr/local/Cellar/postgis/2.1.7_1/share/postgis regress/00-regress-install/share/contrib/
+
+You may also need to set 
+export POSTGIS_SCRIPT_DIR=/usr/local/Cellar/postgis/2.1.7_1/share/postgis/
+ 
+This can probably be done in better way, please let me now.
+
+Then you can run a simple test in the regress directory
+
+By the way ypu update the README file for run_test.pl in the file I coppiedform 
+
+./run_test.pl --verbose --spatial_ref_sys esri_union
+
+
