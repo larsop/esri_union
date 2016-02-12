@@ -23,6 +23,9 @@ run the function  get_esri_union with 3 parameters
 
 [![Build Status](https://secure.travis-ci.org/larsop/esri_union.png)]
 (http://travis-ci.org/larsop/esri_union)
+
+[![Build Status](https://secure.travis-ci.org/larsop/esri_union.png)]
+(http://travis-ci.org/larsop/esri_union)
 The result is stored in a unlogged table sl_lop.result . If the the db server crashes or is be restored the  sl_lop.result will gone, so remember to change table to logged (9.5 only) or copy the result to another table.
 
 ## Example 3 : Union beetween table_1 and table_2 and return a unlogged table with name sl_lop.result, but use bigger cells
