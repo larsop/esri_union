@@ -77,7 +77,7 @@ BEGIN
         sql_to_run := 
         'SELECT ' 
 		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[1] || ',gc.geom)'
-       	|| ' THEN ' || geo_colums_as_array[1]
+       	|| ' THEN ST_Multi(' || geo_colums_as_array[1] || ') '
 		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom)' 
 		|| ' END AS ' || geo_colums_array[1] 
 		|| ',' || columns_as_array[1]  
@@ -94,7 +94,7 @@ BEGIN
         sql_to_run := 
         'SELECT ' 
 		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[2] || ',gc.geom)'
-       	|| ' THEN ' || geo_colums_as_array[2]
+       	|| ' THEN ST_Multi(' || geo_colums_as_array[2] || ') '
 		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom)' 
 		|| ' END AS ' || geo_colums_array[2] 
 		|| ',' || columns_as_array[2]  
