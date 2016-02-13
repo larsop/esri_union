@@ -4,13 +4,13 @@ CREATE OR REPLACE FUNCTION get_esri_union (
 input_table_one text, 
 input_table_two text,
 result_table_name text default null,
-max_rows_pr_cell integer default 3000
+max_rows_pr_cell integer default 3000,
+tmp_grid_table_name text  default null 
 ) RETURNS TEXT  AS
 $body$
 DECLARE
 
 	run_sql_created boolean = true;
-	tmp_grid_table_name text = 'grid_table'; 
 
 	-- used as input when building content based grids
 	schema_table_name_column_name_array text[2];
@@ -76,7 +76,7 @@ DECLARE
 BEGIN
 	-- get random value
 	random_value := '_' || md5(random()::text);
-	tmp_grid_table_name := tmp_grid_table_name || random_value;
+
 	
 	-- parse input to get primary key and geo coulumn name and build input to get content based grid
 	SELECT string_to_array(input_table_one, ' ') INTO line_values; 
@@ -103,18 +103,26 @@ BEGIN
 	RAISE NOTICE 'command_string %', command_string;
 	EXECUTE command_string INTO source_srid ;
 
+	IF tmp_grid_table_name IS NULL THEN
+		tmp_grid_table_name := 'grid_table' || random_value;
+		command_string := format('DROP TABLE IF EXISTS %s',tmp_grid_table_name);
+		EXECUTE command_string;
+		command_string := format('CREATE TEMP TABLE %s(id serial , geom geometry , PRIMARY KEY (id)) ON COMMIT PRESERVE ROWS',tmp_grid_table_name);
+		EXECUTE command_string;
+	ELSE
+		command_string := format('CREATE UNLOGGED TABLE %s(id serial , geom geometry , PRIMARY KEY (id))',tmp_grid_table_name);
+		EXECUTE command_string;
+	END IF;
+
+	
 	-- create grid cell table 
 	-- TODO return a delete command and not delete if it exits
- 	command_string := format('DROP TABLE IF EXISTS %s',tmp_grid_table_name);
-	EXECUTE command_string;
-	command_string := format('CREATE TEMP TABLE %s(id serial , geom geometry , PRIMARY KEY (id)) ON COMMIT PRESERVE ROWS',tmp_grid_table_name);
-	EXECUTE command_string;
 	command_string := format('INSERT INTO %s(geom) 
 	SELECT q_grid.cell::geometry(geometry,%L)  as geom FROM (SELECT(ST_Dump(cbg_content_based_balanced_grid(%L,%L))).geom AS cell) AS q_grid',
 	tmp_grid_table_name,source_srid,schema_table_name_column_name_array,max_rows_pr_cell);
 	EXECUTE command_string;
 	GET DIAGNOSTICS max_cell_id = ROW_COUNT;
-	command_string := format('CREATE INDEX %s ON %s USING gist (geom)', (tmp_grid_table_name || '_gist_index_geom'),tmp_grid_table_name);
+	command_string := format('CREATE INDEX ON %s USING gist (geom)', tmp_grid_table_name);
 	EXECUTE command_string;
 	command_string := format('ANALYZE %s',tmp_grid_table_name);
 	EXECUTE command_string;
