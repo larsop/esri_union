@@ -17,7 +17,13 @@ BEGIN
 --		g2 = ST_buffer(g2,0);
 --	END IF;
 
-	newg := ST_Intersection(g1,g2);
+--	IF ST_CoveredBy(g1,g2) THEN 
+--		newg := g1;
+--	ELSIF ST_CoveredBy(g2,g1) THEN 
+--		newg := g2;
+--	ELSE 
+		newg := ST_Intersection(g1,g2);
+--	END IF;
 	
 	IF ST_GeometryType(newg) = 'ST_GeometryCollection' THEN
 		SELECT ST_Collect(a.geom) INTO newg

@@ -74,9 +74,16 @@ BEGIN
 
     		      
         -- find all intersection between table one and current grid
-        sql_to_run := 'SELECT esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom) AS ' || geo_colums_array[1] || ',' || columns_as_array[1]  
+        sql_to_run := 
+        'SELECT ' 
+		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[1] || ',gc.geom)'
+       	|| ' THEN ST_Multi(' || geo_colums_as_array[1] || ') '
+		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom)' 
+		|| ' END AS ' || geo_colums_array[1] 
+		|| ',' || columns_as_array[1]  
         || ' FROM ' ||  tables_as_array[1] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
-        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[1] || ')';
+        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(' ||  geo_colums_as_array[1] || ',gc.geom)';
+        
         command_string := format('INSERT INTO %s(%s) %s',table_name_tmp_t1,geo_colums_array[1] || ',' || org_columns_names_array[1],sql_to_run);
         RAISE NOTICE 'command_string P1 : % ',command_string;
         EXECUTE command_string;
@@ -84,9 +91,17 @@ BEGIN
         EXECUTE command_string;
                 
         -- find all intersection between table two and current grid
-        sql_to_run := 'SELECT esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom) AS ' || geo_colums_array[2] || ',' || columns_as_array[2]  
+        sql_to_run := 
+        'SELECT ' 
+		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[2] || ',gc.geom)'
+       	|| ' THEN ST_Multi(' || geo_colums_as_array[2] || ') '
+		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom)' 
+		|| ' END AS ' || geo_colums_array[2] 
+		|| ',' || columns_as_array[2]  
         || ' FROM ' ||  tables_as_array[2] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
-        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[2] || ')';
+        || ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(' ||  geo_colums_as_array[2] || ',gc.geom)';
+        
+        
         command_string := format('INSERT INTO %s(%s) %s',table_name_tmp_t2,geo_colums_array[2] || ',' || org_columns_names_array[2],sql_to_run);
         RAISE NOTICE 'command_string P2 : % ',command_string;
         EXECUTE command_string;
@@ -96,7 +111,13 @@ BEGIN
 
 
 	 	-- find all intersection between selected rows from table one and two
-        sql_to_run := 'SELECT * FROM (SELECT esri_union_intersection(' || geo_column_names_as || ') AS geom,'  || column_names_as  
+        sql_to_run := 'SELECT * FROM ( SELECT '
+        || ' CASE ' 
+        || ' WHEN ST_Within(' ||  geo_colums_as_array[1]  || ',' ||  geo_colums_as_array[2] || ') THEN ST_Multi(' || geo_colums_as_array[1] || ') '
+        || ' WHEN ST_Within(' ||  geo_colums_as_array[2]  || ',' ||  geo_colums_as_array[1] || ') THEN ST_Multi(' || geo_colums_as_array[2] || ') '
+		|| ' ELSE ' || ' esri_union_intersection(' || geo_column_names_as || ')' 
+		|| ' END AS geom,'
+        || column_names_as  
         || ' FROM ' ||  tmp_table_names_as ||' WHERE ST_Intersects(' || geo_column_names_as || ')'  || ' ) AS foo_t ';
         command_string := format('INSERT INTO %s(%s) %s',result_table_name_tmp,' geom, ' ||  column_names,sql_to_run);
         RAISE NOTICE 'command_string 1 : % ',command_string;
