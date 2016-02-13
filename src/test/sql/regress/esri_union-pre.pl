@@ -26,7 +26,10 @@ else
 	print "use the esri_union-pre-cbg-def.sql \n";
 }
 
-copy_file_into('esri_union-pre-data.sql',$fh_out);
+copy_file_into('esri_union-pre-def.sql',$fh_out);
+copy_file_into('esri_union-pre-data_1.sql',$fh_out);
+copy_file_into('esri_union-pre-data_2.sql',$fh_out);
+
 close($fh_out);	 
 
 sub copy_file_into() { 

@@ -1,6 +1,6 @@
 1|6852
-2|43
-3|431
-4|union result table:sl_lop.res_beite_bruk , grid table used:sl_lop.beite_grid
-5|7174
-6|1.91819454304075
+2|20
+3|6551
+4|union result table:sl_lop.res_ar250_sk_grl , grid table used:sl_lop.grid_ar250_sk_grl
+5|7373
+6|2.31654783879819
