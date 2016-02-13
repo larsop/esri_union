@@ -1,4 +1,6 @@
-# What is this function doing
+# What is this function doing ?
+[![Build Status](https://secure.travis-ci.org/larsop/esri_union.png)]
+(http://travis-ci.org/larsop/esri_union)
 
 This is a generic Postgres function that is does a “Esri union” between two polygonlayers in a postgis database. More info about Esri union can be found at http://resources.esri.com/help/9.3/arcgisengine/java/gp_toolref/analysis_tools/union_analysis_.htm.
 
@@ -108,7 +110,3 @@ cat ../esri_union/src/main/sql/function_0*.sql | psql
 * Remove grid lines in parallel
 * Return empty areas for instance if you create map with full coverage (this is quite easy to do since we split up data in cells).
 * Create coverage maps for different scales (this is also quite easy to do since we split data up into cells)  
-
-
-[![Build Status](https://secure.travis-ci.org/larsop/esri_union.png)]
-(http://travis-ci.org/larsop/esri_union)
