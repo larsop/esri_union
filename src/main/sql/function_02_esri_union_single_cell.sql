@@ -61,7 +61,7 @@ BEGIN
    	tmp_table_names_as := table_name_tmp_t1 || ' AS t_1, ' || table_name_tmp_t2 || ' AS t_2';
 
   	IF create_tmp_table = true THEN		
-		perform esri_union_create_tmp_tables(singel_paramter);
+		perform esri_union_create_tmp_tables(scp);
 	ELSE
 		-- remove data from temp tables to release loocks
 		command_string := format('TRUNCATE TABLE %s',table_name_tmp_t1);
