@@ -29,6 +29,8 @@ else
 copy_file_into('esri_union-pre-def.sql',$fh_out);
 copy_file_into('esri_union-pre-data_1.sql',$fh_out);
 copy_file_into('esri_union-pre-data_2.sql',$fh_out);
+copy_file_into('esri_union-pre-helling_data_d1.sql',$fh_out);
+
 
 close($fh_out);	 
 
