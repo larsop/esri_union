@@ -1,5 +1,6 @@
 -- Test 1 -------------
 -- This is test that does a "esri union" between sl_lop.ar250_flate_rute_3_flate and sl_lop.sk_grl_flate
+-- More info at https://github.com/larsop/esri_union/wiki
 
 -- Test that input data are ok
 SELECT '1', count(*) from sl_lop.ar250_flate_rute_3_flate;
