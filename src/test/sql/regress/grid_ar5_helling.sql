@@ -25,8 +25,6 @@ CREATE UNLOGGED TABLE grid_ar5_helling (
 );
 
 
-ALTER TABLE grid_ar5_helling OWNER TO lop;
-
 --
 -- Name: grid_ar5_helling_id_seq; Type: SEQUENCE; Schema: sl_lop; Owner: lop
 --
@@ -39,7 +37,6 @@ CREATE SEQUENCE grid_ar5_helling_id_seq
     CACHE 1;
 
 
-ALTER TABLE grid_ar5_helling_id_seq OWNER TO lop;
 
 --
 -- Name: grid_ar5_helling_id_seq; Type: SEQUENCE OWNED BY; Schema: sl_lop; Owner: lop
