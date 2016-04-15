@@ -1,4 +1,12 @@
--- DROP FUNCTION get_esri_union (input_table_one text, input_table_two text,result_table_name text,max_rows_pr_cell int); 
+-- just clean up old functions
+
+DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text,result_table_name text,max_rows_pr_cell integer,tmp_grid_table_name text, run_sql_created boolean);
+DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text,result_table_name text,max_rows_pr_cell integer,tmp_grid_table_name text );
+DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text,result_table_name text,max_rows_pr_cell integer);
+DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text,result_table_name text);
+DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text);
+
+
 
 CREATE OR REPLACE FUNCTION get_esri_union (
 input_table_one text, 

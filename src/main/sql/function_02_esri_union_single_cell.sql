@@ -1,5 +1,7 @@
 
-DROP FUNCTION IF EXISTS get_esri_union_cell (scp esri_union_single_cell_pameter);
+DROP FUNCTION IF EXISTS get_esri_union_cell (scp esri_union_single_cell_pameter) cascade;
+
+DROP FUNCTION IF EXISTS get_esri_union_cell (scp esri_union_single_cell_pameter, create_tmp_table boolean) cascade;
 
 
 CREATE OR REPLACE FUNCTION get_esri_union_cell (
