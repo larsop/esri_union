@@ -78,7 +78,7 @@ BEGIN
         'SELECT ' 
 		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[1] || ',gc.geom)'
        	|| ' THEN ST_Multi(' || geo_colums_as_array[1] || ') '
-		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom)' 
+		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom,TRUE)' 
 		|| ' END AS ' || geo_colums_array[1] 
 		|| ',' || columns_as_array[1]  
         || ' FROM ' ||  tables_as_array[1] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 
@@ -95,7 +95,7 @@ BEGIN
         'SELECT ' 
 		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[2] || ',gc.geom)'
        	|| ' THEN ST_Multi(' || geo_colums_as_array[2] || ') '
-		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom)' 
+		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom,TRUE)' 
 		|| ' END AS ' || geo_colums_array[2] 
 		|| ',' || columns_as_array[2]  
         || ' FROM ' ||  tables_as_array[2] || ', ' ||  tmp_grid_table_name || ' AS gc  ' 

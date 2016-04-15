@@ -27,8 +27,6 @@ CREATE TABLE sk_grl_flate (
 );
 
 
-ALTER TABLE sk_grl_flate OWNER TO lop;
-
 --
 -- Data for Name: sk_grl_flate; Type: TABLE DATA; Schema: sl_lop; Owner: lop
 --
