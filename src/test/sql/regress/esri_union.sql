@@ -29,3 +29,13 @@ SELECT '15', ST_InteriorRingN(a.geo,52079) as geo from sl_lop.helling_data_d1 as
 SELECT '16', SUM(num_points) FROM (SELECT ST_NumPoints(ST_InteriorRingN(a.geo, generate_series(52075, 52079))) as num_points from sl_lop.helling_data_d1 as a where gid = 9419961) as t;
 SELECT '17', sum(ST_Numpoints(ST_ExteriorRing(geom))) FROM (SELECT (ST_DumpRings(a.geo)).geom from sl_lop.helling_data_d1 as a where gid = 9419961) as test;
 
+-- this test will take to long run on travis since this is 50000 interior ring, this must be run parrralel to get any speed
+-- SELECT '18', get_esri_union('sl_lop.ar250_flate_rute_3_flate sl_sdeid geo','sl_lop.helling_data_d1 gid geo','sl_lop.res_ar250_helling',500,'sl_lop.grid_ar250_helling');
+
+
+-- Test 3 -------------
+-- This is test that does a "esri union" between sl_lop.ar250_flate_rute_3_flate and sl_lop.sk_grl_flate
+-- More info at https://github.com/larsop/esri_union/wiki where it's son with two parameters
+-- Since the result is somthing like 'union result table:esri_union_result_523edb181c823275bb956aabdb79420a , grid table used:grid_table_523edb181c823275bb956aabdb79420a'
+-- We just check on the length
+SELECT '30', char_length(get_esri_union('sl_lop.ar250_flate_rute_3_flate sl_sdeid geo','sl_lop.sk_grl_flate komid geo')::varchar);
