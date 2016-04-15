@@ -29,22 +29,3 @@ SELECT '15', ST_InteriorRingN(a.geo,52079) as geo from sl_lop.helling_data_d1 as
 SELECT '16', SUM(num_points) FROM (SELECT ST_NumPoints(ST_InteriorRingN(a.geo, generate_series(52075, 52079))) as num_points from sl_lop.helling_data_d1 as a where gid = 9419961) as t;
 SELECT '17', sum(ST_Numpoints(ST_ExteriorRing(geom))) FROM (SELECT (ST_DumpRings(a.geo)).geom from sl_lop.helling_data_d1 as a where gid = 9419961) as test;
 
--- SELECT '18', SUM(num_points) FROM (SELECT ST_NumPoints(ST_InteriorRingN(a.geo, generate_series(1, 52079))) as num_points from sl_lop.helling_data_d1 as a where gid = 9419961) as t;
--- The test abouve Fails after Time: 430062.190 ms,  Here is info from the log
--- 2016-02-22 11:29:41 CET   LOG:  server process (PID 40220) was terminated by signal 9: Killed
--- 2016-02-22 11:29:41 CET   DETAIL:  Failed process was running: SELECT '17', SUM(num_points) FROM (SELECT ST_NumPoints(ST_InteriorRingN(a.geo, generate_series(1, 52079))) as num_points from sl_lop.helling_data_d1 as a where gid = 9419961) as t
---         ;
--- 2016-02-22 11:29:41 CET   LOG:  terminating any other active server processes
--- 2016-02-22 11:29:41 CET   WARNING:  terminating connection because of crash of another server process
--- 2016-02-22 11:29:41 CET   DETAIL:  The postmaster has commanded this server process to roll back the current transaction and exit, because another server process exited abnormally and possibly corrupted shared memory.
--- 2016-02-22 11:29:41 CET   HINT:  In a moment you should be able to reconnect to the database and repeat your command.
--- 2016-02-22 11:29:41 CET sl lop FATAL:  the database system is in recovery mode
--- 2016-02-22 11:29:41 CET   LOG:  all server processes terminated; reinitializing
--- 2016-02-22 11:29:41 CET   LOG:  database system was interrupted; last known up at 2016-02-22 11:26:38 CET
--- 2016-02-22 11:29:45 CET   LOG:  database system was not properly shut down; automatic recovery in progress
--- 2016-02-22 11:29:45 CET   LOG:  record with zero length at 1F/C40F1A18
--- 2016-02-22 11:29:45 CET   LOG:  redo is not required
--- 2016-02-22 11:29:45 CET   LOG:  MultiXact member wraparound protections are now enabled
--- 2016-02-22 11:29:45 CET   LOG:  database system is ready to accept connections
--- 2016-02-22 11:29:45 CET   LOG:  autovacuum launcher started
-
