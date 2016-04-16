@@ -75,7 +75,7 @@ cat content_balanced_grid/func_grid/functions_*.sql | psql
 
 git clone https://github.com/larsop/esri_union.git
 
-cat ../esri_union/src/main/sql/function_0*.sql | psql
+cat esri_union/src/main/sql/function_0*.sql | psql
 
 # Some limitations/features :
 * Tested with Postgres 9.3 and above. (We use some JSON feature)
