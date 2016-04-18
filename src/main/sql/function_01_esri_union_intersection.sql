@@ -1,6 +1,9 @@
 
 -- If an excpetion happens a buffer with a verry will be tried
 
+DROP FUNCTION IF EXISTS esri_union_intersection(g1 geometry,g2 geometry);
+
+
 CREATE OR REPLACE FUNCTION esri_union_intersection(g1 geometry,g2 geometry,remove_holes boolean DEFAULT FALSE) RETURNS geometry AS $$DECLARE
 	-- the result geo returned
     empty_polygon geometry = 'POLYGON EMPTY'::geometry;
