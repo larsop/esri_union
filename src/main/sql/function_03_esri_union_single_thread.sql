@@ -256,3 +256,11 @@ $body$
 LANGUAGE 'plpgsql';
 
 
+-- Grant so all can use it
+GRANT EXECUTE ON FUNCTION get_esri_union (
+input_table_one text, 
+input_table_two text,
+result_table_name text ,
+max_rows_pr_cell integer ,
+tmp_grid_table_name text  
+) to PUBLIC;

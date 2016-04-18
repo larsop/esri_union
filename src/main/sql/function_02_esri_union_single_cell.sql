@@ -234,3 +234,9 @@ $body$
 LANGUAGE 'plpgsql';
 
 
+-- Grant so all can use it
+GRANT EXECUTE ON FUNCTION get_esri_union_cell (
+scp esri_union_single_cell_pameter, 
+create_tmp_table boolean )
+to PUBLIC;
+

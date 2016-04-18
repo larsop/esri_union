@@ -108,3 +108,9 @@ $body$
 LANGUAGE 'plpgsql';
 
 
+-- Grant som all can use it
+GRANT EXECUTE ON FUNCTION esri_union_remove_grid (
+	result_table text,
+	pk_key_one text,
+	pk_key_two text
+) to PUBLIC;

@@ -54,6 +54,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+-- Grant som all can use it
+GRANT EXECUTE ON FUNCTION esri_union_intersection(g1 geometry,g2 geometry,remove_holes boolean) to PUBLIC;
+
 
 -- The basic idea is to remove all holes that area outside the area we are interested in.
 -- g1 is the big polygon that should be reduced 
@@ -90,6 +93,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
+-- Grant som all can use it
+GRANT EXECUTE ON FUNCTION esri_union_reduce_polygon_with_holes(g1 geometry,g2 geometry) to PUBLIC;
 
 CREATE OR REPLACE FUNCTION valid_multipolygon_difference(g1 geometry,g2 geometry) RETURNS geometry AS $$DECLARE
 	-- the result geo returned
@@ -118,3 +123,6 @@ BEGIN
 	RETURN empty_polygon;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Grant som all can use it
+GRANT EXECUTE ON FUNCTION valid_multipolygon_difference(g1 geometry,g2 geometry) to PUBLIC;

@@ -148,3 +148,5 @@ $body$
 LANGUAGE 'plpgsql';
 
 
+-- Grant som all can use it
+GRANT EXECUTE ON FUNCTION esri_union_create_tmp_tables (scp esri_union_single_cell_pameter) to PUBLIC;
