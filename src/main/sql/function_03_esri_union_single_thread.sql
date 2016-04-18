@@ -163,6 +163,11 @@ BEGIN
         
         RAISE NOTICE 'command_string %', command_string;
         EXECUTE command_string  INTO new_column_as_tmp, new_column_name_tmp, org_column_name_tmp;
+        
+        -- check of any rows are found
+       	IF new_column_as_tmp IS NULL THEN
+        	RAISE EXCEPTION 'No rows found in table > %', schema_table_name USING HINT = 'Please check that you hava data in both data tables.';
+        END IF;
 
 		columns_names_array[i] := array_to_string(new_column_name_tmp, ',');
 		columns_as_array[i] :=  array_to_string(new_column_as_tmp, ',');
