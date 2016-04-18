@@ -200,7 +200,7 @@ BEGIN
 	END IF;
 
 	-- add a result geometry column
-	command_string := format('ALTER TABLE %s ADD COLUMN geom geometry(geometry,%L)',result_table_name,source_srid);
+	command_string := format('ALTER TABLE %s ADD COLUMN geom geometry(MultiPolygon,%L)',result_table_name,source_srid);
 	EXECUTE command_string;
 	-- add a id column
 	command_string := format('ALTER TABLE %s ADD COLUMN id serial PRIMARY KEY ',result_table_name);
