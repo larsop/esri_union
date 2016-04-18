@@ -78,6 +78,8 @@ git clone https://github.com/larsop/esri_union.git
 cat esri_union/src/main/sql/function_0*.sql | psql
 
 # Some limitations/features :
+* Handles only polygon 
+* Input data must be valid
 * Tested with Postgres 9.3 and above. (We use some JSON feature)
 * Testet with srid 4258 (degrees) and 25833 (meter)
 * Both layers must has the same projection. (To avoid to take a copy of the tables)
@@ -85,6 +87,8 @@ cat esri_union/src/main/sql/function_0*.sql | psql
 * Return a temp table or a unlogged table. (To avoid to create tons of wall files. If the result is suppose be kept for later do “create table as” for temp tables or in Postgres 9.5 do alter table if unlogged.)
 * If the same logged in user runs this function at the same against the same table we seems to block that resolved after a while.
 * Runs default in one single thread (Almost the same code also works with multiple threads and you can the run many times a fast. How to do work in parallel will be added to the repo later. In parallel mode we can handle thousands of surfaces pr. second )
+* It's inportant to have GIST indexes the the geometry column
+
 
 
 # How it works in more details :
