@@ -69,12 +69,13 @@ Then you can zoom to this rows or download rows to check them out.
 
 
 # How to install :
-<pre><code> 
 git clone https://github.com/larsop/content_balanced_grid
+
 cat content_balanced_grid/func_grid/functions_*.sql | psql 
+
 git clone https://github.com/larsop/esri_union.git
-cat ../esri_union/src/main/sql/function_0*.sql | psql
-</pre></code>
+
+cat esri_union/src/main/sql/function_0*.sql | psql
 
 # Some limitations/features :
 * Tested with Postgres 9.3 and above. (We use some JSON feature)
