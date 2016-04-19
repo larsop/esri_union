@@ -20,6 +20,7 @@ input_table_one text,
 input_table_two text,
 result_table_name text,
 max_rows_pr_cell integer,
+remove_grid_lines boolean,
 tmp_grid_table_name text);
 
 DROP FUNCTION cbg_get_table_extent (schema_table_name_column_name_array VARCHAR[]);

@@ -5,7 +5,7 @@ DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two t
 DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text,result_table_name text,max_rows_pr_cell integer);
 DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text,result_table_name text);
 DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text);
-
+DROP FUNCTION IF EXISTS  get_esri_union (input_table_one text, input_table_two text, result_table_name text, max_rows_pr_cell integer, tmp_grid_table_name text);
 
 
 CREATE OR REPLACE FUNCTION get_esri_union (
@@ -13,7 +13,8 @@ input_table_one text,
 input_table_two text,
 result_table_name text default null,
 max_rows_pr_cell integer default 3000,
-tmp_grid_table_name text  default null 
+remove_grid_lines boolean DEFAULT true,
+tmp_grid_table_name text  default null
 ) RETURNS TEXT  AS
 $body$
 DECLARE
@@ -247,8 +248,10 @@ BEGIN
 	END LOOP;
 
 	
-	-- grep remove grid lines 
-	perform esri_union_remove_grid(result_table_name,'t1_' || pk_columns_array[1],'t2_' || pk_columns_array[2]);
+   -- remove grid lines 
+	IF remove_grid_lines = true THEN		
+		perform esri_union_remove_grid(result_table_name,'t1_' || pk_columns_array[1],'t2_' || pk_columns_array[2]);
+	END IF;	
 
 	RETURN  'union result table:' || result_table_name || ' , grid table used:' || tmp_grid_table_name;
 END;
@@ -262,5 +265,6 @@ input_table_one text,
 input_table_two text,
 result_table_name text ,
 max_rows_pr_cell integer ,
-tmp_grid_table_name text  
+remove_grid_lines boolean ,
+tmp_grid_table_name text
 ) to PUBLIC;
