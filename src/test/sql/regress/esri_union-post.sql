@@ -23,6 +23,15 @@ max_rows_pr_cell integer,
 remove_grid_lines boolean,
 tmp_grid_table_name text);
 
+DROP FUNCTION get_esri_union_muti_thread (
+input_table_one text, 
+input_table_two text,
+result_table_name text,
+max_rows_pr_cell integer,
+tmp_grid_table_name text, 
+run_sql_created boolean,
+remove_grid_lines boolean); 
+
 DROP FUNCTION cbg_get_table_extent (schema_table_name_column_name_array VARCHAR[]);
 
 DROP FUNCTION cbg_content_based_balanced_grid (	
