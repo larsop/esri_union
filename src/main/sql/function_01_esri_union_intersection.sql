@@ -1,14 +1,64 @@
+-- this did not work or have any effect
+DROP FUNCTION IF EXISTS esri_union_st_multi(newg geometry);
 
--- If an excpetion happens a buffer with a verry will be tried
+
+CREATE OR REPLACE FUNCTION esri_union_st_multi(newg geometry) RETURNS geometry AS $$DECLARE
+	empty_polygon geometry = 'POLYGON EMPTY'::geometry;
+    
+    -- the geo to be returned
+    geo_return geometry;
+    
+BEGIN
+		
+	IF ST_Area(newg) > 0 THEN 
+		BEGIN
+			geo_return := ST_Multi(newg);
+		EXCEPTION WHEN OTHERS THEN
+			newg := ST_MakeValid(newg);
+
+			IF NOT ST_isValid(newg)  THEN 
+				RAISE NOTICE 'failed to make valid % : %',ST_isValid(newg),ST_AsBinary(newg);
+				geo_return := empty_polygon;
+			END IF;
+
+			geo_return := ST_Multi(newg);
+				
+			IF NOT ST_isValid(geo_return)  THEN 
+				RAISE NOTICE 'failed to make valid % : %',ST_isValid(geo_return),ST_AsBinary(geo_return);
+				geo_return := empty_polygon;
+			END IF;
+
+		END;
+	
+	ELSE
+		geo_return := empty_polygon;
+	END IF;
+
+
+	RETURN geo_return;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Grant som all can use it
+
+GRANT EXECUTE ON FUNCTION esri_union_st_multi(newg geometry) to PUBLIC;
+
 
 DROP FUNCTION IF EXISTS esri_union_intersection(g1 geometry,g2 geometry);
 
 
 CREATE OR REPLACE FUNCTION esri_union_intersection(g1 geometry,g2 geometry,remove_holes boolean DEFAULT FALSE) RETURNS geometry AS $$DECLARE
-	-- the result geo returned
-    empty_polygon geometry = 'POLYGON EMPTY'::geometry;
+	empty_polygon geometry = 'POLYGON EMPTY'::geometry;
+    
+    -- the result intersetcion
     newg geometry; 
- 	
+    
+    -- the geo to be returned
+    geo_return geometry;
+    
+    -- temp object used when braeking up polygons
+   	newg1 geometry; 
+  	
 BEGIN
 	
 	
@@ -27,16 +77,22 @@ BEGIN
 --	ELSE 
 
 	
-	-- find the interesing area to work with only do diff ig number of hholes area verry bigg
 	
-		IF remove_holes THEN 
-			newg := esri_union_reduce_polygon_with_holes(g1,g2);
-			newg := ST_Intersection(newg,g2);
-		ELSE 
-			newg := ST_Intersection(g1,g2);
-		END IF;
-	
---	END IF;
+	IF remove_holes THEN 
+		-- find the interesing area to work with only do diff ig number of hholes area verry bigg
+		newg1 := esri_union_reduce_polygon_with_holes(g1,g2);
+	ELSE 
+		newg1 := g1;
+	END IF;	
+
+	--find intersection
+	BEGIN
+		newg := ST_Intersection(newg1,g2);
+	EXCEPTION WHEN OTHERS THEN
+		-- try tu run with buffer 0
+		newg := ST_Intersection(ST_BUffer(newg1,0),ST_BUffer(g2,0));
+	END;
+
 	
 	IF ST_GeometryType(newg) = 'ST_GeometryCollection' THEN
 		SELECT ST_Collect(a.geom) INTO newg
@@ -44,13 +100,24 @@ BEGIN
   		WHERE ST_Area(a.geom) > 0;
 	END IF;
 
-	IF ST_Area(newg) > 0 
-	-- AND ST_isValid(newg )
-	THEN 
-		RETURN ST_Multi(newg);
+	IF ST_Area(newg) > 0 THEN 
+		BEGIN
+			geo_return := ST_Multi(newg);
+		EXCEPTION WHEN OTHERS THEN
+			-- try tu run with buffer 0
+			geo_return := ST_Multi(ST_BUffer(newg,0));
+		END;
+	ELSE
+		geo_return := empty_polygon;
 	END IF;
+
+	IF NOT ST_isValid(geo_return) THEN 
+		RAISE NOTICE 'failed to make valid % : %',ST_isValid(geo_return),ST_AsBinary(geo_return);
 	
-	RETURN empty_polygon;
+		geo_return := empty_polygon;
+	END IF;
+
+	RETURN geo_return;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
@@ -64,6 +131,8 @@ GRANT EXECUTE ON FUNCTION esri_union_intersection(g1 geometry,g2 geometry,remove
 
 CREATE OR REPLACE FUNCTION esri_union_reduce_polygon_with_holes(g1 geometry,g2 geometry) RETURNS geometry AS $$DECLARE
     newg geometry = g1; 
+
+ 
 BEGIN
 	IF ST_GeometryType(g2) = 'ST_Polygon' AND ST_GeometryType(g1) = 'ST_Polygon' AND ST_NumInteriorRings(g1) > 0 THEN
 		newg := 
@@ -96,33 +165,92 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 -- Grant som all can use it
 GRANT EXECUTE ON FUNCTION esri_union_reduce_polygon_with_holes(g1 geometry,g2 geometry) to PUBLIC;
 
-CREATE OR REPLACE FUNCTION valid_multipolygon_difference(g1 geometry,g2 geometry) RETURNS geometry AS $$DECLARE
-	-- the result geo returned
-    empty_polygon geometry = 'POLYGON EMPTY'::geometry;
-    newg geometry; 
- 	
-BEGIN
---	IF NOT ST_isValid(g1) OR NOT ST_isValid(g1)THEN 
---		RETURN empty_polygon;
---	END IF;
+CREATE OR REPLACE FUNCTION valid_multipolygon_difference(g1 geometry,g2_in geometry[]) RETURNS geometry AS $$DECLARE
+   -- the geo to be returned
+    geo_return geometry;
 
-	newg := ST_Difference(g1,g2);
+    empty_polygon geometry = 'POLYGON EMPTY'::geometry;
+    
+    newg geometry; 
+    
+    g2 geometry;
+    
+    g2_in_row geometry;
+
+ 	
+  BEGIN
+
+	-- Make union g2
+	BEGIN
+		g2 := ST_Union(g2_in);
+
+	EXCEPTION WHEN OTHERS THEN
+	    RAISE WARNING 'Failed to to union before running differense at % try row by row union.', ST_Centroid(g1);
+
+		g2 := empty_polygon;
+		FOREACH g2_in_row IN ARRAY g2_in LOOP
+       		RAISE WARNING 'Failed to to union, isValid %, % , Area:%, srid %', ST_IsValid(g2_in_row), ST_GeometryType(g2_in_row), ST_Area(g2_in_row), ST_Srid(g2_in_row);
+       		RAISE WARNING 'Failed to to union, geo  %', ST_AsBinary(g2_in_row);
+       		
+       		IF ST_isValid(g2_in_row) THEN
+ 				g2 := ST_Union(g2,g2_in_row);
+ 			ELSE 
+ 				g2 := ST_Union(g2,ST_MakeValid(g2_in_row));
+ 			END IF;
+    	END loop;
+    	
+	END;
+	  
+
+	BEGIN
+		newg := ST_Difference(g1,g2);
+		
+	EXCEPTION WHEN OTHERS THEN
+	
+		g1 := ST_MakeValid(g1);
+		g2 := ST_MakeValid(g2);
+	
+		IF NOT ST_isValid(g1) THEN 
+			RAISE NOTICE 'failed to make valid % : %',ST_isValid(g1),ST_AsBinary(g1) ;
+			RETURN empty_polygon;
+		END IF;
+	
+		IF  NOT ST_isValid(g2)THEN 
+			RAISE NOTICE 'failed to make valid % : %',ST_isValid(g2),ST_AsBinary(g2);
+			RETURN empty_polygon;
+		END IF;
+		newg := ST_Difference(g1,g2);
+	END;
+
+	
 	
 	IF ST_GeometryType(newg) = 'ST_GeometryCollection' THEN
 		SELECT ST_Collect(a.geom) INTO newg
   		FROM ( SELECT (ST_Dump(newg)).geom as geom ) as a
   		WHERE ST_Area(a.geom) > 0;
 	END IF;
-
-	IF ST_Area(newg) > 0 
-	--AND ST_isValid(newg )
-	THEN 
-		RETURN ST_Multi(newg);
+	
+	
+	IF ST_Area(newg) > 0 THEN 
+		BEGIN
+			geo_return := ST_Multi(newg);
+		EXCEPTION WHEN OTHERS THEN
+		
+			newg := ST_MakeValid(newg);
+		
+			IF NOT ST_isValid(newg) THEN 
+				RAISE NOTICE 'failed to make valid : % : %',ST_isValid(newg),ST_AsBinary(newg) ;
+				RETURN empty_polygon;
+			END IF;
+			geo_return := ST_Multi(newg);
+		END;
+	ELSE
+		geo_return := empty_polygon;
 	END IF;
 	
-	RETURN empty_polygon;
+	RETURN geo_return;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- Grant som all can use it
-GRANT EXECUTE ON FUNCTION valid_multipolygon_difference(g1 geometry,g2 geometry) to PUBLIC;
+GRANT EXECUTE ON FUNCTION valid_multipolygon_difference(g1 geometry,g2 geometry[]) to PUBLIC;

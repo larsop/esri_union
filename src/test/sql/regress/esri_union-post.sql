@@ -5,7 +5,7 @@ DROP FUNCTION esri_union_create_tmp_tables (scp esri_union_single_cell_pameter);
 
 DROP FUNCTION esri_union_intersection(g1 geometry,g2 geometry,remove_holes boolean);
 
-DROP FUNCTION valid_multipolygon_difference(g1 geometry,g2 geometry);
+DROP FUNCTION valid_multipolygon_difference(g1 geometry,g2  geometry[]);
 
 DROP FUNCTION esri_union_remove_grid (	result_table text,
 	pk_key_one text,

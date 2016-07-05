@@ -79,7 +79,7 @@ BEGIN
         sql_to_run := 
         'SELECT ' 
 		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[1] || ',gc.geom)'
-       	|| ' THEN ST_Multi(' || geo_colums_as_array[1] || ') '
+       	|| ' THEN esri_union_st_multi(' || geo_colums_as_array[1] || ') '
 		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[1] || ',gc.geom,TRUE)' 
 		|| ' END AS ' || geo_colums_array[1] 
 		|| ',' || columns_as_array[1]  
@@ -96,7 +96,7 @@ BEGIN
         sql_to_run := 
         'SELECT ' 
 		|| 'CASE WHEN ST_Within(' ||  geo_colums_as_array[2] || ',gc.geom)'
-       	|| ' THEN ST_Multi(' || geo_colums_as_array[2] || ') '
+       	|| ' THEN esri_union_st_multi(' || geo_colums_as_array[2] || ') '
 		|| ' ELSE ' || ' esri_union_intersection(' || geo_colums_as_array[2] || ',gc.geom,TRUE)' 
 		|| ' END AS ' || geo_colums_array[2] 
 		|| ',' || columns_as_array[2]  
@@ -133,16 +133,21 @@ BEGIN
 		|| columns_as_array[1]   
 		|| ' FROM ' ||  table_name_tmp_t1  || ' AS t_1 '
 	--	|| ', ' ||  tmp_grid_table_name || ' AS gc '
-		|| ', (SELECT ' || ' t_1.' || pk_columns_array[1] || ', ST_Union('|| geo_colums_as_array[2] || ') AS to_be_removed ' 
+	
+		-- ST_Union is ERROR:  GEOSUnaryUnion: TopologyException: Input geom 1 try to use array in instead
+	
+		|| ', (SELECT ' || ' t_1.' || pk_columns_array[1] || ',  array_agg('|| geo_colums_as_array[2] || ') AS to_be_removed ' 
 		|| ' FROM ' ||  tmp_table_names_as 
 		--|| ', ' 
 		--||  tmp_grid_table_name || ' AS gc  ' 
 		--|| ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[1] || ') AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[2] || ')' 
 		|| ' WHERE ST_Intersects(' || geo_column_names_as || ')' 
+		--|| ' AND ST_isValid('|| geo_colums_as_array[2] || ')' 
 		|| ' GROUP BY ' || ' t_1.' || pk_columns_array[1] || ') as res_b ' 
-		|| ' WHERE res_b.'  || pk_columns_array[1] || '= t_1.'  || pk_columns_array[1] || ' AND ST_Area(res_b.to_be_removed) > 0 '
+		|| ' WHERE res_b.'  || pk_columns_array[1] || '= t_1.'  || pk_columns_array[1] 
+		--|| ' AND ST_Area(res_b.to_be_removed) > 0 '
 		--|| ' AND gc.id = ' || cell_id || ' AND gc.geom && ' ||  geo_colums_as_array[1] || 
-		') AS foo_t ';
+		|| ') AS foo_t ';
 		RAISE NOTICE 'command_string 2 : % ',command_string;
 		command_string := format('INSERT INTO %s(%s) %s',result_table_name_tmp,' geom, ' ||  columns_names_array[1],sql_to_run);
 		EXECUTE command_string;
@@ -153,13 +158,15 @@ BEGIN
 		|| columns_as_array[2]   
 		|| ' FROM ' || table_name_tmp_t2 || ' AS t_2 '
 	--	|| ', ' ||  tmp_grid_table_name || ' AS gc '
-		|| ', (SELECT ' || ' t_2.' || pk_columns_array[2] || ', ST_Union('|| geo_colums_as_array[1] || ') AS to_be_removed ' 
+		|| ', (SELECT ' || ' t_2.' || pk_columns_array[2] || ',  array_agg('|| geo_colums_as_array[1] || ') AS to_be_removed ' 
 		|| ' FROM ' ||  tmp_table_names_as  
 	--	|| ', ' ||  tmp_grid_table_name || ' AS gc  ' 
 	--	|| ' WHERE gc.id = ' || cell_id || ' AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[1] || ') AND ST_Intersects(gc.geom,' ||  geo_colums_as_array[2] || ')' 
 		|| ' WHERE ST_Intersects(' || geo_column_names_as || ')' 
+	--	|| ' AND ST_isValid('|| geo_colums_as_array[1] || ')' 
 		|| ' GROUP BY ' || ' t_2.' || pk_columns_array[2] || ') as res_b ' 
-		|| ' WHERE res_b.'  || pk_columns_array[2] || ' = t_2.'  || pk_columns_array[2] || ' AND ST_Area(res_b.to_be_removed) > 0 '
+		|| ' WHERE res_b.'  || pk_columns_array[2] || ' = t_2.'  || pk_columns_array[2] 
+		--|| ' AND ST_Area(res_b.to_be_removed) > 0 '
 		--|| ' AND gc.id = ' || cell_id || ' AND gc.geom && ' ||  geo_colums_as_array[2] 
 		|| ') AS foo_t ';
 		RAISE NOTICE 'command_string 3 : % ',command_string;
