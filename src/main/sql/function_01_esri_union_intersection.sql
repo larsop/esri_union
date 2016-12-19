@@ -207,9 +207,11 @@ CREATE OR REPLACE FUNCTION valid_multipolygon_difference(g1 geometry,g2_in geome
 		
 	EXCEPTION WHEN OTHERS THEN
 	
+
 		g1 := ST_MakeValid(g1);
 		g2 := ST_MakeValid(g2);
-	
+
+		
 		IF NOT ST_isValid(g1) THEN 
 			RAISE NOTICE 'failed to make valid % : %',ST_isValid(g1),ST_AsBinary(g1) ;
 			RETURN empty_polygon;
@@ -219,7 +221,48 @@ CREATE OR REPLACE FUNCTION valid_multipolygon_difference(g1 geometry,g2_in geome
 			RAISE NOTICE 'failed to make valid % : %',ST_isValid(g2),ST_AsBinary(g2);
 			RETURN empty_polygon;
 		END IF;
-		newg := ST_Difference(g1,g2);
+		
+		BEGIN
+			newg := ST_Difference(g1,g2);
+		
+			EXCEPTION WHEN OTHERS THEN
+	
+				RAISE NOTICE 'Failed to handle geos with type % : g2 %',ST_GeometryType(g1),ST_GeometryType(g2);
+				RAISE NOTICE 'Failed to handle geos with St_Area g1 % : g2 %',ST_Area(g1),ST_area(g2) ;
+			
+-- work ok	
+				-- did not work with ,-0.00000000001, but worsk ok with
+				g1 = ST_Buffer(g1,-0.000000001);
+				g2 = ST_Buffer(g2,-0.000000001);
+				RAISE NOTICE 'Try to fix by makeing g1 and g2 a tiny bit smaller (new area)  g1 % : g2 %',ST_Area(g1),ST_area(g2) ;
+
+-- did not work				
+--				g1 = ST_Snap(g1,g2,0.000001);
+--				g2 = ST_Snap(g2,g1,0.000001);
+--				RAISE NOTICE 'Try to fix by using snapto  (new area)  g1 % : g2 %',ST_Area(g1),ST_area(g2) ;
+
+-- did not work				
+-- ERROR:  XX000: GEOSDifference: TopologyException: Input geom 1 is invalid: Self-intersection at or near point 602777.84329999995 7123831.9999989998 at 602777.84329999995 7123831.9999989998
+--				g1 = ST_SnapToGrid(g1,0.000001);
+--				g2 = ST_SnapToGrid(g2,0.000001);
+--				RAISE NOTICE 'Try to fix by using snapto  (new area)  g1 % : g2 %',ST_Area(g1),ST_area(g2) ;
+
+				g1 := ST_MakeValid(g1);
+				g2 := ST_MakeValid(g2);
+
+		
+				IF NOT ST_isValid(g1) THEN 
+					RAISE NOTICE 'failed to make valid after polygon change % : %',ST_isValid(g1),ST_AsBinary(g1) ;
+					RETURN empty_polygon;
+				END IF;
+			
+				IF  NOT ST_isValid(g2)THEN 
+					RAISE NOTICE 'failed to make valid after polygon change  % : %',ST_isValid(g2),ST_AsBinary(g2);
+					RETURN empty_polygon;
+				END IF;
+
+				newg := ST_Difference(g1,g2);
+		END;
 	END;
 
 	
