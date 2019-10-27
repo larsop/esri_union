@@ -1,13 +1,30 @@
-sudo: false
-
-language: sql
+sudo: required
+dist: xenial
 
 addons:
-  postgresql: "9.4"
   apt:
     packages:
-    - postgis
+      - postgresql-11
+      - postgresql-11-postgis-2.5
+      - postgresql-11-postgis-2.5-scripts
+      - postgis
+#      - postgis-2.5-client
+#      - postgis-2.5-util
+  postgresql: '11'
 
+before_install:
+  - sudo sed -i 's/port = 5433/port = 5432/' /etc/postgresql/11/main/postgresql.conf
+  - sudo cp /etc/postgresql/{10,11}/main/pg_hba.conf
+  - sudo service postgresql stop
+  - sudo service postgresql start 11
+
+services:
+  - postgresql
+
+global:
+  - PGPORT=5432
 script:
+#  - find / -name shp2pgsql* 2>/dev/null 
   - echo "select version()" | psql template1
   - make check RUNTESTFLAGS=-v
+
