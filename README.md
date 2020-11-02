@@ -80,7 +80,7 @@ cat esri_union/src/main/sql/function_0*.sql | psql
 # Some limitations/features :
 * Handles only polygon 
 * Input data must be valid
-* Tested with Postgres 9.3 and above. (We use some JSON feature)
+* Tested with Postgres 11 and above. 
 * Testet with srid 4258 (degrees) and 25833 (meter)
 * Both layers must has the same projection. (To avoid to take a copy of the tables)
 * Both layers must contain rows
